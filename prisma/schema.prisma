@@ -10,8 +10,20 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
-model Example {
+model Post {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+
+    // Store the emojis
+    content String @db.VarChar(255)
+    authorId String
+
+    // To find all Posts for a given authorId
+    @@index([authorId])
 }
+
+// When you change schema, you need to do 
+// "npx prisma generate" or "npm install" 
+// to trigger the client code generation.
+// You also need to restart dev server to 
+// pick up the changes.
