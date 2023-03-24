@@ -8,6 +8,7 @@ import { api, type RouterOutputs } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
+import { LoadingPage } from "~/components/loading";
 
 dayjs.extend(relativeTime);
 
@@ -53,9 +54,8 @@ const PostView = (props: PostWithUser) => {
       <div className="flex flex-col text-slate-300">
         <div className="flex gap-1">
           <span>{`@${author.username}`}</span>
-          <span className="font-thin">{`· 1 ${dayjs(
-            post.createdAt
-          ).fromNow()}`}</span>
+          <span className="font-thin">·</span>
+          <span>{`${dayjs(post.createdAt).fromNow()}`}</span>
         </div>
         <span>{post.content}</span>
       </div>
@@ -63,19 +63,35 @@ const PostView = (props: PostWithUser) => {
   );
 };
 
-const Home: NextPage = () => {
-  // const hello = api.example.hello.useQuery({ text: "from tRPC" });
+const Feed = () => {
+  const { data, isLoading: postsLoading } = api.posts.getAll.useQuery();
 
+  if (postsLoading) return <LoadingPage />;
+
+  if (!data) return <div>Something went wrong...</div>;
+
+  return (
+    <div className="flex flex-col">
+      {[...data, ...data].map((fullPost) => (
+        <PostView key={fullPost.post.id} {...fullPost} />
+      ))}
+    </div>
+  );
+};
+
+const Home: NextPage = () => {
   // trpc lets us create server fns that run on server to do
   // things like fetch data from db or api so we  can get
   // data in right shape, authenticated, without user running
   // the db code themselves.
 
-  const user = useUser();
+  const { isLoaded: userLoaded, isSignedIn } = useUser();
 
-  const { data, isLoading } = api.posts.getAll.useQuery();
-  if (isLoading) return <div>Loading...</div>;
-  if (!data) return <div>Something went wrong...</div>;
+  // Start fecthcing asap to cache data
+  api.posts.getAll.useQuery();
+
+  // Return empty div if user isn't loaded
+  if (!userLoaded) return <div />;
 
   return (
     <>
@@ -87,23 +103,19 @@ const Home: NextPage = () => {
       <main className="flex h-screen justify-center">
         <div className="h-full w-full border-x border-slate-400 md:max-w-2xl">
           <div className="flex border-b border-slate-400 p-4">
-            {!user.isSignedIn && (
+            {!isSignedIn && (
               <div className="flex justify-center">
                 <SignInButton />
               </div>
             )}
-            {!!user.isSignedIn && (
+            {isSignedIn && (
               <>
                 <CreatePostWizard />
                 <SignOutButton />
               </>
             )}
           </div>
-          <div className="flex flex-col">
-            {[...data, ...data].map((fullPost) => (
-              <PostView key={fullPost.post.id} {...fullPost} />
-            ))}
-          </div>
+          <Feed />
         </div>
       </main>
     </>
