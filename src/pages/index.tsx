@@ -17,7 +17,17 @@ const CreatePostWizard = () => {
   const { user } = useUser();
   const [input, setInput] = useState("");
 
-  const { mutate } = api.posts.create.useMutation();
+  // Get TRPC cache context?
+  const ctx = api.useContext();
+
+  const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
+    onSuccess: () => {
+      setInput("");
+      // Update existing posts on the page
+      // Ignore promise by using "void"
+      void ctx.posts.getAll.invalidate();
+    },
+  });
 
   if (!user) return null;
   console.log(user);
@@ -37,6 +47,7 @@ const CreatePostWizard = () => {
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
+        disabled={isPosting}
       />
       <button onClick={() => mutate({ content: input })}>Post</button>
     </div>
