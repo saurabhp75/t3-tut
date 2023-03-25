@@ -9,6 +9,11 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
+import { Ratelimit } from "@upstash/ratelimit"; // for deno: see above
+import { Redis } from "@upstash/redis";
+// import { filterUserForClient } from "~/server/helpers/filterUserForClient";
+import type { Post } from "@prisma/client";
+
 const filterUserForClient = (user: User) => {
   return {
     id: user.id,
@@ -16,9 +21,6 @@ const filterUserForClient = (user: User) => {
     profileImageUrl: user.profileImageUrl,
   };
 };
-
-import { Ratelimit } from "@upstash/ratelimit"; // for deno: see above
-import { Redis } from "@upstash/redis";
 
 // Create a new ratelimiter, that allows 3 requests per 1 minute
 const ratelimit = new Ratelimit({
@@ -33,6 +35,7 @@ export const postsRouter = createTRPCRouter({
   // These procedures run on a server and generates
   // functions that client calls, it is public and
   // no auth is required.
+
   getAll: publicProcedure.query(async ({ ctx }) => {
     // Get all posts (max 100)
     const posts = await ctx.prisma.post.findMany({
@@ -71,6 +74,8 @@ export const postsRouter = createTRPCRouter({
     });
     // console.log(users);
   }),
+
+  // Validations should ALSO be done @client using zod and react hook forms
   create: privateProcedure
     .input(
       z.object({
