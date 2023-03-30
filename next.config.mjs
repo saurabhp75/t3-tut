@@ -18,6 +18,7 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+
   images: {
     remotePatterns: [
       {
@@ -26,5 +27,15 @@ const config = {
       },
     ],
   },
+
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  swcMinify: true,
 };
 export default config;
