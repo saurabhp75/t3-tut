@@ -60,6 +60,8 @@ export const postsRouter = createTRPCRouter({
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
+      console.log(`@@@@@postId: ${input.id}@@@@`);
+
       const post = await ctx.prisma.post.findUnique({
         where: { id: input.id },
       });

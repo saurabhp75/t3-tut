@@ -11,6 +11,8 @@ type PostWithUser = RouterOutputs["posts"]["getAll"][number];
 export const PostView = (props: PostWithUser) => {
   const { post, author } = props;
 
+  // console.log(post.id);
+
   // console.log(`URL: ${author.profileImageUrl}`);
   // console.log(`author: ${author.username}`);
   return (
@@ -28,7 +30,7 @@ export const PostView = (props: PostWithUser) => {
             <span>{`@${author.username}`}</span>
           </Link>
           <span className="font-thin">·</span>
-          <Link href={`/post/${post.id}}`}>
+          <Link href={`/post/${post.id}`}>
             <span>{`${dayjs(post.createdAt).fromNow()}`}</span>
           </Link>
         </div>
